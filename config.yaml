@@ -1,0 +1,16 @@
+rnn_unit: lstm
+learning_rate: !!float 1e-5
+max_gradient_norm: 5.0
+batch_size: 64
+num_hidden_units: 300
+num_layers: 2
+dropout: 0.5
+en_vocab_size: 100000
+ckpt_dir: checkpoints
+num_classes: 183
+input_traindata: /home/jin/graduate/data_tfrecords/train.tfrecords
+input_validdata: /home/jin/graduate/data_tfrecords/valid.tfrecords
+valid_step: 200
+valid_num_batch: 5
+log_dir: /home/jin/graduate/log
+vocab_dict: /home/jin/graduate/data/vocab.dict
