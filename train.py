@@ -53,8 +53,9 @@ def train(vocab_dict):
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
-        train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
-        valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
+        with tf.device('/cpu:0'):
+            train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
+            valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
         model =create_model(sess,FLAGS)
         coord=tf.train.Coordinator()
         threads=tf.train.start_queue_runners(coord=coord)
