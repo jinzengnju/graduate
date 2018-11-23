@@ -52,8 +52,9 @@ def train(vocab_dict):
     os.environ['CUDA_VISIBLE_DEVICES']='0'
     gpuConfig=tf.ConfigProto(allow_soft_placement=True,report_tensor_allocations_upon_oom=True)
     gpuConfig.gpu_options.allow_growth=True
+    config=tf.ConfigProto(report_tensor_allocations_upon_oom=True)
     judge=Judger()
-    with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
+    with tf.Graph().as_default(), tf.Session(config=config) as sess:
         with tf.device('/cpu:0'):
             train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
             valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
