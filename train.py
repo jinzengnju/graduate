@@ -81,23 +81,23 @@ def train(vocab_dict):
                     save_model(model,sess,step_index)
                     print('Step %d:train loss=%.2f(%.3sec)'%(step_index,loss,time_use))
                     train_writer.add_summary(summary_train,step_index)
-                    valid_loss = 0
-                    accracy=0
-                    for _ in range(FLAGS.valid_num_batch):
-                        print("验证一下")
-                        valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
-                        valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict)
-                        summary_valid,loss, valid_predict = model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
-                                                       forward_only=True)
-                        valid_loss+=loss
-                        accracy+=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v)
-                    valid_loss_res=valid_loss/FLAGS.valid_num_batch
-                    valid_accu_res=accracy/FLAGS.valid_num_batch
-                    valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
-                    valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
-                    valid_writer.add_summary(valid_loss_summary,step_index)
-                    valid_writer.add_summary(valid_accu_summary, step_index)
-                    print("valid loss=%.3f and accuracy=%.3f"%(valid_loss_res,valid_accu_res))
+                    # valid_loss = 0
+                    # accracy=0
+                    # for _ in range(FLAGS.valid_num_batch):
+                    #     print("验证一下")
+                    #     valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
+                    #     valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict)
+                    #     summary_valid,loss, valid_predict = model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
+                    #                                    forward_only=True)
+                    #     valid_loss+=loss
+                    #     accracy+=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v)
+                    # valid_loss_res=valid_loss/FLAGS.valid_num_batch
+                    # valid_accu_res=accracy/FLAGS.valid_num_batch
+                    # valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
+                    # valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
+                    # valid_writer.add_summary(valid_loss_summary,step_index)
+                    # valid_writer.add_summary(valid_accu_summary, step_index)
+                    # print("valid loss=%.3f and accuracy=%.3f"%(valid_loss_res,valid_accu_res))
                     start_time=time.time()
                     print("下一阶段的训练")
                 step+=1
