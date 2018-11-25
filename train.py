@@ -52,9 +52,8 @@ def train(vocab_dict):
     os.environ['CUDA_VISIBLE_DEVICES']='0'
     gpuConfig=tf.ConfigProto(allow_soft_placement=True,report_tensor_allocations_upon_oom=True)
     gpuConfig.gpu_options.allow_growth=True
-    config=tf.ConfigProto(report_tensor_allocations_upon_oom=True)
     judge=Judger()
-    with tf.Graph().as_default(), tf.Session(config=config) as sess:
+    with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
         with tf.device('/cpu:0'):
             train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
             valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
@@ -71,8 +70,8 @@ def train(vocab_dict):
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 #print([bytes.decode(e) for e in train_fact_v])
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict)
-                summary_train,_, loss, predict_result = model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
-                                               forward_only=False)
+                # summary_train,_, loss, predict_result = model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
+                #                                forward_only=False)
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
@@ -81,8 +80,8 @@ def train(vocab_dict):
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
                     save_model(model,sess,step_index)
-                    print('Step %d:train loss=%.2f(%.3sec)'%(step_index,loss,time_use))
-                    train_writer.add_summary(summary_train,step_index)
+                    # print('Step %d:train loss=%.2f(%.3sec)'%(step_index,loss,time_use))
+                    # train_writer.add_summary(summary_train,step_index)
                     # valid_loss = 0
                     # accracy=0
                     # for _ in range(FLAGS.valid_num_batch):

@@ -10,7 +10,7 @@ ckpt_dir: checkpoints
 num_classes: 183
 input_traindata: /home/jin/graduate/data_tfrecords/train.tfrecords
 input_validdata: /home/jin/graduate/data_tfrecords/valid.tfrecords
-valid_step: 200
+valid_step: 5
 valid_num_batch: 5
 log_dir: /home/jin/graduate/log
 vocab_dict: /home/jin/graduate/data/vocab.dict
