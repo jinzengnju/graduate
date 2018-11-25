@@ -47,7 +47,7 @@ class Model(object):
 
         with tf.device('/cpu:0'):
             with tf.variable_scope('rnn_inputs'):
-                W_input=tf.get_variable("W_input",[FLAGS.en_vocab_size,FLAGS.num_hidden_units])
+                W_input=tf.get_variable("W_input",[FLAGS.en_vocab_size,FLAGS.num_hidden_units],trainable=False)
             inputs=rnn_inputs(FLAGS,self.inputs_X)
 
         all_outputs,state=tf.nn.dynamic_rnn(cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
