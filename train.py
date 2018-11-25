@@ -50,7 +50,7 @@ def save_model(model,sess,step_index):
 
 def train(vocab_dict):
     os.environ['CUDA_VISIBLE_DEVICES']='0'
-    gpuConfig=tf.ConfigProto(allow_soft_placement=True,report_tensor_allocations_upon_oom=True)
+    gpuConfig=tf.ConfigProto(allow_soft_placement=True)
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
