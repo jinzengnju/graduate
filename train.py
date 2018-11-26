@@ -77,7 +77,7 @@ def train(vocab_dict):
                 #上面两个均为np.array类型
                 if step%(FLAGS.valid_step)==0:
                     print([bytes.decode(e) for e in train_fact_v])
-                    print(train_law_v)
+                    print(np.where(train_law_v==1))
                     print(train_fact_val)
                     print(train_seq_lens)
                     time_use = time.time() - start_time
