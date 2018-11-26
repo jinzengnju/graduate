@@ -27,6 +27,7 @@ tf.app.flags.DEFINE_integer("valid_num_batch",10,'执行valid时跑多少个batc
 tf.app.flags.DEFINE_string("log_dir","/home/jin/data/log",'')
 tf.app.flags.DEFINE_string("vocab_dict","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_string("config","/home/jin/data/vocab_dict",'')
+tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
 FLAGS=tf.app.flags.FLAGS
 
 def create_model(sess,FLAGS):
@@ -69,7 +70,7 @@ def train(vocab_dict):
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 #print([bytes.decode(e) for e in train_fact_v])
-                train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict)
+                train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
                 summary_train,_, loss, predict_result = model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
                                                forward_only=False)
                 #predict_result是batch内每个样本的预测类标记0-182
@@ -134,6 +135,7 @@ class PreProcess:
         FLAGS.valid_num_batch=trainconfig.get("valid_num_batch")
         FLAGS.log_dir=trainconfig.get("log_dir")
         FLAGS.vocab_dict=trainconfig.get("vocab_dict")
+        FLAGS.max_time_step_size=trainconfig.get("max_time_step_size")
     def before_train(self):
         law_num = getClassNum("law")
         FLAGS.num_classes=law_num

@@ -14,3 +14,4 @@ valid_step: 5
 valid_num_batch: 5
 log_dir: /home/jin/graduate/log
 vocab_dict: /home/jin/graduate/data/vocab.dict
+max_time_step_size: 600

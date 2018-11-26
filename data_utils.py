@@ -88,12 +88,14 @@ GO_ID=1
 EOS_ID=2
 UNK_ID=3
 
-def cut_text(alltext):
-    count = 0
+def cut_text(alltext,maxsize):
     train_text = []
     for text in alltext:
-        count += 1
-        train_text.append([word for word in jieba.cut(text) if len(word)>1])
+        one_text=[word for word in jieba.cut(text) if len(word)>1]
+        if (len(one_text)>maxsize):
+            one_text=one_text[:maxsize]
+        train_text.append(one_text)
+
     return train_text
 
 
@@ -112,9 +114,10 @@ def data_to_token_ids(X,vocab_dict):
         seq_lens.append(len(token_ids))
     return data_as_tokens,seq_lens
 
-def get_X_with_word_index(allfact,vocab_dict):
-    temp=cut_text(allfact)
+def get_X_with_word_index(allfact,vocab_dict,max_time_step_size):
+    temp=cut_text(allfact,max_time_step_size)
     alltext,seq_lens=data_to_token_ids(temp,vocab_dict)
+
     alltext=np.array(alltext)
     seq_lens=np.array(seq_lens)
     return alltext,seq_lens
