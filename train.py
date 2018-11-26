@@ -73,7 +73,6 @@ def train(vocab_dict):
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
                 summary_train,_, loss, predict_result = model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
                                                forward_only=False)
-                print(predict_result)
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
@@ -87,11 +86,12 @@ def train(vocab_dict):
                     valid_loss = 0
                     accracy=0
                     for _ in range(FLAGS.valid_num_batch):
-                        print("验证一下")
+                        #print("验证一下")
                         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
                         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
                         summary_valid,loss, valid_predict = model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
                                                        forward_only=True)
+
                         valid_loss+=loss
                         accracy+=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v)
                     valid_loss_res=valid_loss/FLAGS.valid_num_batch
@@ -102,7 +102,7 @@ def train(vocab_dict):
                     valid_writer.add_summary(valid_accu_summary, step_index)
                     print("valid loss=%.3f and accuracy=%.3f"%(valid_loss_res,valid_accu_res))
                     start_time=time.time()
-                    print("下一阶段的训练")
+                    #print("下一阶段的训练")
                 step+=1
         except tf.errors.OutOfRangeError:
             print('Done training for %d steps'%step)
