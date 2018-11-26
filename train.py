@@ -55,9 +55,8 @@ def train(vocab_dict):
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
-        with tf.device('/cpu:0'):
-            train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
-            valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
+        train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
+        valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
         model =create_model(sess,FLAGS)
         coord=tf.train.Coordinator()
         threads=tf.train.start_queue_runners(coord=coord)
@@ -77,11 +76,15 @@ def train(vocab_dict):
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
                 if step%(FLAGS.valid_step)==0:
+                    print([bytes.decode(e) for e in train_fact_v])
+                    print(train_law_v)
+                    print(train_fact_val)
+                    print(train_seq_lens)
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
                     save_model(model,sess,step_index)
-                    print('Step %d:train loss=%.2f(%.3sec)'%(step_index,loss,time_use))
+                    print('Step %d:train loss=%.6f(%.3sec)'%(step_index,loss,time_use))
                     train_writer.add_summary(summary_train,step_index)
                     valid_loss = 0
                     accracy=0
@@ -100,7 +103,7 @@ def train(vocab_dict):
                     valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
                     valid_writer.add_summary(valid_loss_summary,step_index)
                     valid_writer.add_summary(valid_accu_summary, step_index)
-                    print("valid loss=%.3f and accuracy=%.3f"%(valid_loss_res,valid_accu_res))
+                    print("valid loss=%.6f and accuracy=%.5f"%(valid_loss_res,valid_accu_res))
                     start_time=time.time()
                     #print("下一阶段的训练")
                 step+=1
