@@ -69,14 +69,13 @@ def train(vocab_dict):
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 #print([bytes.decode(e) for e in train_fact_v])
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
-                summary_train,_, loss, predict_result = model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
+                summary_train,_, loss, predict_result,lr= model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
                                                forward_only=False)
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
                 if step%(FLAGS.valid_step)==0:
-                    # print([np.where(e==1)[0] for e in train_law_v])
-                    # print(predict_result)
+                    print(lr)
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
@@ -87,9 +86,10 @@ def train(vocab_dict):
                     accracy=0
                     for _ in range(FLAGS.valid_num_batch):
                         #print("验证一下")
+                        print(lr)
                         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
                         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
-                        summary_valid,loss, valid_predict = model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
+                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
                                                        forward_only=True)
 
                         valid_loss+=loss

@@ -49,7 +49,6 @@ class Model(object):
             W_input=tf.get_variable("W_input",[FLAGS.en_vocab_size,FLAGS.num_hidden_units])
         inputs=rnn_inputs(FLAGS,self.inputs_X)
 
-
         all_outputs,state=tf.nn.dynamic_rnn(cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
         outputs=state[-1][1]
 
@@ -70,12 +69,12 @@ class Model(object):
             return accuracy
         #self.accuracy=get_accuracy(self.targets_y,logits)
 
-        self.predict=tf.nn.top_k(logits,5)
-        self.loss=tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=probabilities,labels=self.targets_y))
+        self.predict = tf.nn.top_k(logits, 5)
+        self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.targets_y))
 
-        tf.summary.scalar('loss',self.loss)
+        tf.summary.scalar('loss', self.loss)
 
-        self.lr=tf.Variable(0.01,trainable=False)
+        self.lr = tf.Variable(0.01, trainable=False)
         trainable_vars=tf.trainable_variables()
         grads,_=tf.clip_by_global_norm(tf.gradients(self.loss,trainable_vars),FLAGS.max_gradient_norm)
         optimizer=tf.train.AdamOptimizer(self.lr)
@@ -89,11 +88,11 @@ class Model(object):
                     self.seq_lens:batch_seq_lens,
                     self.dropout:dropout}
         if forward_only:
-            output_feed=[self.merged,self.loss,self.predict]
+            output_feed=[self.merged,self.loss,self.predict,self.lr]
         else:
-            output_feed=[self.merged,self.train_optimizer,self.loss,self.predict]
+            output_feed=[self.merged,self.train_optimizer,self.loss,self.predict,self.lr]
         outputs=sess.run(output_feed,input_feed)
         if forward_only:
-            return outputs[0],outputs[1],outputs[2]
-        else:
             return outputs[0],outputs[1],outputs[2],outputs[3]
+        else:
+            return outputs[0],outputs[1],outputs[2],outputs[3],outputs[4]
