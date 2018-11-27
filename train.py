@@ -74,8 +74,12 @@ def train(vocab_dict):
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
+                if step%15==0:
+                    step_index = sess.run(model.global_step)
+                    print('Step %d:train loss=%.6f' % (step_index, loss))
+
                 if step%(FLAGS.valid_step)==0:
-                    print(lr)
+                    #print(lr)
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
@@ -86,7 +90,7 @@ def train(vocab_dict):
                     accracy=0
                     for _ in range(FLAGS.valid_num_batch):
                         #print("验证一下")
-                        print(lr)
+                        #print(lr)
                         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
                         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
                         summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
@@ -102,7 +106,6 @@ def train(vocab_dict):
                     valid_writer.add_summary(valid_accu_summary, step_index)
                     print("valid loss=%.6f and accuracy=%.5f"%(valid_loss_res,valid_accu_res))
                     start_time=time.time()
-                    #print("下一阶段的训练")
                 step+=1
         except tf.errors.OutOfRangeError:
             print('Done training for %d steps'%step)
