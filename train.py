@@ -76,8 +76,8 @@ def train(vocab_dict):
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
                 if step%(FLAGS.valid_step)==0:
-                    print([np.where(e==1)[0] for e in train_law_v])
-                    print(predict_result)
+                    # print([np.where(e==1)[0] for e in train_law_v])
+                    # print(predict_result)
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
