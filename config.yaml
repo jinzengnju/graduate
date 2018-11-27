@@ -2,8 +2,8 @@ rnn_unit: lstm
 learning_rate: !!float 0.01
 max_gradient_norm: 5.0
 batch_size: 64
-num_hidden_units: 300
-num_layers: 2
+num_hidden_units: 400
+num_layers: 3
 dropout: 0.8
 en_vocab_size: 100000
 ckpt_dir: checkpoints
