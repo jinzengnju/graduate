@@ -60,7 +60,6 @@ def train(vocab_dict):
         model =create_model(sess,FLAGS)
         coord=tf.train.Coordinator()
         threads=tf.train.start_queue_runners(coord=coord)
-
         train_writer=tf.summary.FileWriter(FLAGS.log_dir+'/train',sess.graph)
         valid_writer=tf.summary.FileWriter(FLAGS.log_dir+'/valid')
         try:
