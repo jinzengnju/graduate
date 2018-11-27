@@ -70,7 +70,7 @@ class Model(object):
         #self.accuracy=get_accuracy(self.targets_y,logits)
 
         self.predict=tf.nn.top_k(logits,5)
-        self.loss=tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits,labels=self.targets_y))
+        self.loss=tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=probabilities,labels=self.targets_y))
 
         tf.summary.scalar('loss',self.loss)
 
