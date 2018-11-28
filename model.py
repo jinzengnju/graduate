@@ -74,7 +74,7 @@ class Model(object):
 
         tf.summary.scalar('loss', self.loss)
 
-        self.lr = tf.Variable(0.01, trainable=False)
+        self.lr = tf.Variable(0.0001, trainable=False)
         trainable_vars=tf.trainable_variables()
         grads,_=tf.clip_by_global_norm(tf.gradients(self.loss,trainable_vars),FLAGS.max_gradient_norm)
         optimizer=tf.train.AdamOptimizer(self.lr)
