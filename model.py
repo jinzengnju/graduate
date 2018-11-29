@@ -38,7 +38,7 @@ class Model(object):
     def __init__(self,FLAGS):
         self.inputs_X=tf.placeholder(tf.int32,shape=[None,None],name='inputs_X')
         self.targets_y=tf.placeholder(tf.float32,shape=[None,None],name='targets_y')
-        self.seq_lens=tf.placeholder(tf.int32,shape=[None,],name='seq_lens')
+        self.seq_lens=tf.placeholder(tf.float32,shape=[None,],name='seq_lens')
         self.dropout=tf.placeholder(tf.float32)
         self.global_step = tf.Variable(0, trainable=False)
 
@@ -52,7 +52,8 @@ class Model(object):
 
 
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
-        outputs=tf.reduce_sum(all_outputs,1)/self.seq_lens
+
+        outputs=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
 
 
         with tf.variable_scope('rnn_softmax'):
@@ -72,15 +73,14 @@ class Model(object):
         self.predict = tf.nn.top_k(logits, 5)
         self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.targets_y))
         loss_summary=tf.summary.scalar('loss', self.loss)
-        self.lr = tf.Variable(0.00001, trainable=False)
+        self.lr = tf.Variable(0.0001, trainable=False)
 
         trainable_vars=tf.trainable_variables()
         grads,_=tf.clip_by_global_norm(tf.gradients(self.loss,trainable_vars),FLAGS.max_gradient_norm)
 
 
-        grad_and_vars=zip(grads,trainable_vars)
         grad_summaries=[]
-        for g,v in grad_and_vars:
+        for g,v in zip(grads,trainable_vars):
             if g is not None:
                 grad_hist_summary=tf.summary.histogram("{}/grad/hist".format(v.name),g)
                 grad_summaries.append(grad_hist_summary)
@@ -92,7 +92,7 @@ class Model(object):
 
 
         optimizer=tf.train.AdamOptimizer(self.lr)
-        self.train_optimizer=optimizer.apply_gradients(grad_and_vars,global_step=self.global_step)
+        self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
 
     def step(self,sess,batch_X,batch_seq_lens,batch_y=None,dropout=0.0,forward_only=True):
