@@ -93,12 +93,12 @@ def train(vocab_dict):
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
                 if step%5==0:
-                    print(predict_result[1])
                     step_index = sess.run(model.global_step)
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
                 if step%(FLAGS.valid_step)==0:
                     #print(lr)
+                    print(predict_result[1])
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
