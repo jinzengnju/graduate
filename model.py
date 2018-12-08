@@ -2,19 +2,6 @@
 # -*- coding:UTF-8 -*-
 import tensorflow as tf
 
-def rnn_inputs(FLAGS,input_data):
-    with tf.variable_scope('rnn_inputs',reuse=True):
-        W_input=tf.get_variable("W_input",[FLAGS.en_vocab_size,FLAGS.num_hidden_units])
-    embeddings=tf.nn.embedding_lookup(W_input,input_data)
-    return embeddings
-
-def rnn_softmax(FLAGS,outputs):
-    with tf.variable_scope('rnn_softmax',reuse=True):
-        W_softmax=tf.get_variable("W_softmax",[FLAGS.num_hidden_units,FLAGS.num_classes])
-        b_softmax=tf.get_variable("b_softmax",[FLAGS.num_classes])
-    logits=tf.matmul(outputs,W_softmax)+b_softmax
-    return logits
-
 
 
 class Model(object):

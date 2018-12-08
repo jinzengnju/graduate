@@ -16,3 +16,4 @@ log_dir: /home/jin/graduate/log
 vocab_dict: /home/jin/graduate/data/vocab.dict
 w2v_model: /home/jin/graduate/word2vec/w2v_model
 pos_weight: 100
+max_time_step_size: 800
