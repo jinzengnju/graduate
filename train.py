@@ -8,6 +8,7 @@ from model import Model
 from data_utils import *
 from MacroWithPython import *
 import yaml
+from gensim.models import Word2Vec
 
 #Configs
 tf.app.flags.DEFINE_string("rnn_unit",'lstm',"Type of RNN unit:rnn|gru|lstm.")
@@ -28,10 +29,11 @@ tf.app.flags.DEFINE_string("log_dir","/home/jin/data/log",'')
 tf.app.flags.DEFINE_string("vocab_dict","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_string("config","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
+tf.app.flags.DEFINE_integer("pos_weight",90,'')
 FLAGS=tf.app.flags.FLAGS
 
-def create_model(sess,FLAGS):
-    text_model=Model(FLAGS)
+def create_model(sess,FLAGS,embedding_matrix):
+    text_model=Model(FLAGS,embedding_matrix)
     ckpt=tf.train.get_checkpoint_state(FLAGS.ckpt_dir)
     if ckpt and ckpt.model_checkpoint_path:
         print("Restoring old model parameters from %s"%ckpt.model_checkpoint_path)
@@ -48,16 +50,28 @@ def save_model(model,sess,step_index):
     print("Saving the model and global_step is:",step_index)
     model.saver.save(sess, checkpoint_path, global_step=model.global_step)
 
+def get_EmbeddingMatrix(sorted_word):
+    model=Word2Vec.load(FLAGS.w2v_model)
+    embedding_matrix=np.random.randn(FLAGS.en_vocab_size,FLAGS.embedding_size)
+    for word,index in sorted_word.items():
+        try:
+            embedding_vector=model[word]
+            embedding_matrix[index]=embedding_vector
+        except KeyError:
+            embedding_vector=embedding_matrix[3]
+            embedding_matrix[index]=embedding_vector
+    return embedding_matrix
 
 def train(vocab_dict):
     os.environ['CUDA_VISIBLE_DEVICES']='0'
     gpuConfig=tf.ConfigProto(allow_soft_placement=True)
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
+    embedding_matrix = get_EmbeddingMatrix(vocab_dict)
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
         train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
         valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
-        model =create_model(sess,FLAGS)
+        model =create_model(sess,FLAGS,embedding_matrix)
         coord=tf.train.Coordinator()
         threads=tf.train.start_queue_runners(coord=coord)
         train_writer=tf.summary.FileWriter(FLAGS.log_dir+'/train',sess.graph)
@@ -65,6 +79,8 @@ def train(vocab_dict):
         try:
             step=0
             start_time = time.time()
+
+            sess.run(tf.assign(model.lr,FLAGS.learning_rate))
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 #print([bytes.decode(e) for e in train_fact_v])
@@ -74,8 +90,8 @@ def train(vocab_dict):
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
                 #上面两个均为np.array类型
-                if step%15==0:
-                    print(predict_result)
+                if step%5==0:
+                    print(lr)
                     step_index = sess.run(model.global_step)
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
@@ -94,7 +110,7 @@ def train(vocab_dict):
                         #print(lr)
                         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
                         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
-                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=FLAGS.dropout,
+                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=1.0,
                                                        forward_only=True)
 
                         valid_loss+=loss
@@ -141,6 +157,7 @@ class PreProcess:
         FLAGS.log_dir=trainconfig.get("log_dir")
         FLAGS.vocab_dict=trainconfig.get("vocab_dict")
         FLAGS.max_time_step_size=trainconfig.get("max_time_step_size")
+        FLAGS.pos_weight=trainconfig.get("pos_weight")
     def before_train(self):
         law_num = getClassNum("law")
         FLAGS.num_classes=law_num
