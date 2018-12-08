@@ -8,8 +8,7 @@ class Model(object):
     def rnn_cell(self,FLAGS,dropout):
         single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units)
         single_cell=tf.nn.rnn_cell.DropoutWrapper(single_cell,output_keep_prob=dropout)
-        stacked_cell=tf.nn.rnn_cell.MultiRNNCell([single_cell]*FLAGS.num_layers,state_is_tuple=True)
-        return stacked_cell
+        return single_cell
 
     def __init__(self,FLAGS,embedding_matrix):
         self.inputs_X=tf.placeholder(tf.int32,shape=[None,None],name='inputs_X')
@@ -21,7 +20,7 @@ class Model(object):
             self.embedding=tf.Variable(initial_value=embedding_matrix,dtype=tf.float32,name="Embedding",trainable=True)
             inputs=tf.nn.embedding_lookup(self.embedding,self.inputs_X)
 
-        stacked_cell=self.rnn_cell(FLAGS,self.dropout)
+        stacked_cell=tf.nn.rnn_cell.MultiRNNCell([self.rnn_cell(FLAGS,self.dropout) for _ in range(FLAGS.num_layers)])
 
         initial_state=stacked_cell.zero_state(FLAGS.batch_size,tf.float32)
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
