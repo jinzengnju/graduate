@@ -31,6 +31,7 @@ tf.app.flags.DEFINE_string("config","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
 tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
 tf.app.flags.DEFINE_integer("pos_weight",90,'')
+tf.app.flags.DEFINE_integer("embedding_size","150",'')
 FLAGS=tf.app.flags.FLAGS
 
 def create_model(sess,FLAGS,embedding_matrix):
@@ -160,6 +161,7 @@ class PreProcess:
         FLAGS.max_time_step_size=trainconfig.get("max_time_step_size")
         FLAGS.w2v_model=trainconfig.get("w2v_model")
         FLAGS.pos_weight=trainconfig.get("pos_weight")
+        FLAGS.embedding_size=trainconfig.get("embedding_size")
     def before_train(self):
         law_num = getClassNum("law")
         FLAGS.num_classes=law_num
