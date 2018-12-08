@@ -29,6 +29,7 @@ tf.app.flags.DEFINE_string("log_dir","/home/jin/data/log",'')
 tf.app.flags.DEFINE_string("vocab_dict","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_string("config","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
+tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
 tf.app.flags.DEFINE_integer("pos_weight",90,'')
 FLAGS=tf.app.flags.FLAGS
 
@@ -157,6 +158,7 @@ class PreProcess:
         FLAGS.log_dir=trainconfig.get("log_dir")
         FLAGS.vocab_dict=trainconfig.get("vocab_dict")
         FLAGS.max_time_step_size=trainconfig.get("max_time_step_size")
+        FLAGS.w2v_model=trainconfig.get("w2v_model")
         FLAGS.pos_weight=trainconfig.get("pos_weight")
     def before_train(self):
         law_num = getClassNum("law")
