@@ -25,7 +25,7 @@ class Model(object):
         outputs=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
 
         logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
-        self.probablities=tf.nn.sigmoid(logits)
+        #self.probablities=tf.nn.sigmoid(logits)
 
         self.predict=tf.nn.top_k(logits,6,sorted=True)
         #predict是从0开始的label
@@ -37,8 +37,8 @@ class Model(object):
         #self.accuracy=get_accuracy(self.targets_y,logits)
         #self.predict = tf.nn.top_k(logits, 5)
 
-        self.loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
-        #self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.targets_y,logits=logits))
+        #self.loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.targets_y,logits=logits))
         loss_summary=tf.summary.scalar('loss', self.loss)
         self.lr = tf.Variable(0.0, trainable=False)
 
@@ -53,7 +53,7 @@ class Model(object):
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
         self.summary=tf.summary.merge([loss_summary,grad_summaries_merged])
-        optimizer=tf.train.AdamOptimizer(self.lr)
+        optimizer=tf.train.GradientDescentOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
 

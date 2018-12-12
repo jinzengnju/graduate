@@ -99,13 +99,6 @@ def train(vocab_dict):
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
                 if step%(FLAGS.valid_step)==0:
-                    # predict=[np.where(e >= FLAGS.sig_value)[0] for e in predict_result]
-                    # true_label=[np.where(e == 1)[0] for e in train_law_v]
-                    # for num_i in range(len(predict)):
-                    #     print("预测*******************************************")
-                    #     print(predict[num_i])
-                    #     print("真实*******************************************")
-                    #     print(true_label[num_i])
                     predict=predict_result[1]
                     true_label = [np.where(e == 1)[0] for e in train_law_v]
                     for num_i in range(len(predict)):
@@ -131,7 +124,7 @@ def train(vocab_dict):
                                                        forward_only=True)
 
                         valid_loss+=loss
-                        temp=judge.getAccuracy2(predict=valid_predict[1],truth=valid_law_v,sig_value=FLAGS.sig_value)
+                        temp=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v,sig_value=FLAGS.sig_value)
                         accracy+=np.array(temp)
                     accracy=accracy/FLAGS.valid_num_batch*1.0
 
