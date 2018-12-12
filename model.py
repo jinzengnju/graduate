@@ -37,7 +37,7 @@ class Model(object):
         #self.accuracy=get_accuracy(self.targets_y,logits)
         #self.predict = tf.nn.top_k(logits, 5)
 
-        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
+        self.loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
         #self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.targets_y,logits=logits))
         loss_summary=tf.summary.scalar('loss', self.loss)
         self.lr = tf.Variable(0.0, trainable=False)
