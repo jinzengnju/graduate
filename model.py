@@ -27,7 +27,7 @@ class Model(object):
         logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         self.probablities=tf.nn.sigmoid(logits)
 
-        self.predict=tf.nn.top_k(logits,8,sorted=True)
+        self.predict=tf.nn.top_k(logits,6,sorted=True)
         #predict是从0开始的label
 
         def get_accuracy(logits,targets_y):
@@ -53,7 +53,7 @@ class Model(object):
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
         self.summary=tf.summary.merge([loss_summary,grad_summaries_merged])
-        optimizer=tf.train.GradientDescentOptimizer(self.lr)
+        optimizer=tf.train.AdamOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
 
