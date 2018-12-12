@@ -33,7 +33,7 @@ tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
 tf.app.flags.DEFINE_integer("pos_weight",90,'')
 tf.app.flags.DEFINE_integer("embedding_size","150",'')
 tf.app.flags.DEFINE_string("valid_logdir","/home/jin/log",'')
-tf.app.flags.DEFINE_integer("sig_value",0.5,'')
+tf.app.flags.DEFINE_float("sig_value",0.5,'')
 FLAGS=tf.app.flags.FLAGS
 
 def create_model(sess,FLAGS,embedding_matrix):
@@ -99,10 +99,13 @@ def train(vocab_dict):
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
                 if step%(FLAGS.valid_step)==0:
-                    print("预测*******************************************")
-                    print([np.where(e >= FLAGS.sig_value)[0] for e in predict_result])
-                    print("真实*******************************************")
-                    print([np.where(e == 1)[0] for e in train_law_v])
+                    predict=[np.where(e >= FLAGS.sig_value)[0] for e in predict_result]
+                    true_label=[np.where(e == 1)[0] for e in train_law_v]
+                    for num_i in range(len(predict)):
+                        print("预测*******************************************")
+                        print(predict[num_i])
+                        print("真实*******************************************")
+                        print(true_label[num_i])
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)

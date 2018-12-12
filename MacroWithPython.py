@@ -98,7 +98,6 @@ class Judger:
             result[0].append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
         for index in range(sample_num):
             predict_sample=np.where(predict[index]>=sig_value)[0]
-            print("predict:",predict_sample)
             truth_sample=np.where(truth[index]==1)[0]
             result=self.gen_new_result(result,truth_sample,predict_sample)
         res=self.get_score(result)
