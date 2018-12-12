@@ -12,7 +12,7 @@ input_traindata: /home/jin/graduate/data_tfrecords/train.tfrecords
 input_validdata: /home/jin/graduate/data_tfrecords/valid.tfrecords
 valid_step: 200
 valid_num_batch: 120
-log_dir: /home/jin/graduate/log2
+log_dir: /home/jin/graduate/log
 vocab_dict: /home/jin/graduate/data/vocab.dict
 w2v_model: /home/jin/graduate/word2vec/w2v_model
 pos_weight: 3200
