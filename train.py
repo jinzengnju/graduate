@@ -33,6 +33,7 @@ tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
 tf.app.flags.DEFINE_integer("pos_weight",90,'')
 tf.app.flags.DEFINE_integer("embedding_size","150",'')
 tf.app.flags.DEFINE_string("valid_logdir","/home/jin/log",'')
+tf.app.flags.DEFINE_integer("sig_value",0.5,'')
 FLAGS=tf.app.flags.FLAGS
 
 def create_model(sess,FLAGS,embedding_matrix):
@@ -98,7 +99,10 @@ def train(vocab_dict):
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
                 if step%(FLAGS.valid_step)==0:
-                    #print(lr)
+                    print("预测*******************************************")
+                    print([np.where(e >= FLAGS.sig_value)[0] for e in predict_result])
+                    print("真实*******************************************")
+                    print([np.where(e == 1)[0] for e in train_law_v])
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
@@ -116,7 +120,7 @@ def train(vocab_dict):
                                                        forward_only=True)
 
                         valid_loss+=loss
-                        temp=judge.getAccuracy(predict=valid_predict,truth=valid_law_v)
+                        temp=judge.getAccuracy(predict=valid_predict,truth=valid_law_v,sig_value=FLAGS.sig_value)
                         accracy+=np.array(temp)
                     accracy=accracy/FLAGS.valid_num_batch*1.0
                     json.dump(accracy.tolist(),f_write)
@@ -168,6 +172,7 @@ class PreProcess:
         FLAGS.pos_weight=trainconfig.get("pos_weight")
         FLAGS.embedding_size=trainconfig.get("embedding_size")
         FLAGS.valid_logdir=trainconfig.get("valid_logdir")
+        FLAGS.sig_value=trainconfig.get("sig_value")
     def before_train(self):
         law_num = getClassNum("law")
         FLAGS.num_classes=law_num

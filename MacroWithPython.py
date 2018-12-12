@@ -91,13 +91,14 @@ class Judger:
         s1 = self.gen_score(result[0])
         return s1
 
-    def getAccuracy(self,predict,truth):
+    def getAccuracy(self,predict,truth,sig_value):
         result = [[]]
         sample_num=len(predict)
         for a in range(0, self.task2_cnt):
             result[0].append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
         for index in range(sample_num):
-            predict_sample=np.where(predict[index]>=0.5)[0]
+            predict_sample=np.where(predict[index]>=sig_value)[0]
+            print("predict:",predict_sample)
             truth_sample=np.where(truth[index]==1)[0]
             result=self.gen_new_result(result,truth_sample,predict_sample)
         res=self.get_score(result)

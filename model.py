@@ -6,7 +6,7 @@ import tensorflow as tf
 
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
-        single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units,initializer=tf.glorot_normal_initializer(),forget_bias=1.0)
+        single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units,forget_bias=1.0)
         single_cell=tf.nn.rnn_cell.DropoutWrapper(single_cell,output_keep_prob=dropout)
         return single_cell
 
