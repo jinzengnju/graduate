@@ -72,7 +72,6 @@ def train(vocab_dict):
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     embedding_matrix = get_EmbeddingMatrix(vocab_dict)
-    f_write=open(FLAGS.valid_logdir,'w')
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
         train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
         valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
@@ -126,8 +125,12 @@ def train(vocab_dict):
                         temp=judge.getAccuracy(predict=valid_predict,truth=valid_law_v,sig_value=FLAGS.sig_value)
                         accracy+=np.array(temp)
                     accracy=accracy/FLAGS.valid_num_batch*1.0
+
+                    f_write = open(FLAGS.valid_logdir, 'w')
                     json.dump(accracy.tolist(),f_write)
                     f_write.write('\n')
+                    f_write.close()
+
                     valid_loss_res=valid_loss/FLAGS.valid_num_batch
                     valid_accu_res=accracy[6]
                     valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
@@ -143,7 +146,6 @@ def train(vocab_dict):
             coord.request_stop()
         coord.join(threads)
         sess.close()
-        f_write.close()
 
 class TrainConfig:
     def __init__(self,path):
