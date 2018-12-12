@@ -2,8 +2,6 @@
 # -*- coding:UTF-8 -*-
 import tensorflow as tf
 
-
-
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
         single_cell=tf.nn.rnn_cell.LSTMCell(FLAGS.num_hidden_units,forget_bias=1.0,initializer=tf.glorot_normal_initializer())
@@ -29,7 +27,7 @@ class Model(object):
         logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         self.probablities=tf.nn.sigmoid(logits)
 
-        #self.predict=tf.where(probablities>=0.5)
+        self.predict=tf.nn.top_k(logits,8,sorted=True)
         #predict是从0开始的label
 
         def get_accuracy(logits,targets_y):
@@ -39,8 +37,8 @@ class Model(object):
         #self.accuracy=get_accuracy(self.targets_y,logits)
         #self.predict = tf.nn.top_k(logits, 5)
 
-        #self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
-        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.targets_y,logits=logits))
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
+        #self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.targets_y,logits=logits))
         loss_summary=tf.summary.scalar('loss', self.loss)
         self.lr = tf.Variable(0.0, trainable=False)
 
@@ -55,7 +53,7 @@ class Model(object):
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
         self.summary=tf.summary.merge([loss_summary,grad_summaries_merged])
-        optimizer=tf.train.AdamOptimizer(self.lr)
+        optimizer=tf.train.GradientDescentOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
 
@@ -65,9 +63,9 @@ class Model(object):
                     self.seq_lens:batch_seq_lens,
                     self.dropout:dropout}
         if forward_only:
-            output_feed=[self.summary,self.loss,self.probablities,self.lr]
+            output_feed=[self.summary,self.loss,self.predict,self.lr]
         else:
-            output_feed=[self.summary,self.train_optimizer,self.loss,self.probablities,self.lr]
+            output_feed=[self.summary,self.train_optimizer,self.loss,self.predict,self.lr]
         outputs=sess.run(output_feed,input_feed)
         if forward_only:
             return outputs[0],outputs[1],outputs[2],outputs[3]
