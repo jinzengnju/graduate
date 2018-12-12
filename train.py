@@ -32,6 +32,7 @@ tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
 tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
 tf.app.flags.DEFINE_integer("pos_weight",90,'')
 tf.app.flags.DEFINE_integer("embedding_size","150",'')
+tf.app.flags.DEFINE_string("valid_logdir","/home/jin/log",'')
 FLAGS=tf.app.flags.FLAGS
 
 def create_model(sess,FLAGS,embedding_matrix):
@@ -70,6 +71,7 @@ def train(vocab_dict):
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     embedding_matrix = get_EmbeddingMatrix(vocab_dict)
+    f_write=open(FLAGS.valid_logdir,'w')
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
         train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
         valid_fact,valid_laws=inputs(FLAGS.input_validdata,FLAGS.batch_size,FLAGS.num_classes)
@@ -81,7 +83,6 @@ def train(vocab_dict):
         try:
             step=0
             start_time = time.time()
-
             sess.run(tf.assign(model.lr,FLAGS.learning_rate))
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
@@ -98,7 +99,6 @@ def train(vocab_dict):
 
                 if step%(FLAGS.valid_step)==0:
                     #print(lr)
-                    print(predict_result[1])
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
@@ -106,7 +106,7 @@ def train(vocab_dict):
                     print('Step %d:train loss=%.6f(%.3sec)'%(step_index,loss,time_use))
                     train_writer.add_summary(summary_train,step_index)
                     valid_loss = 0
-                    accracy=0
+                    accracy=np.zeros(7)
                     for _ in range(FLAGS.valid_num_batch):
                         #print("验证一下")
                         #print(lr)
@@ -116,9 +116,13 @@ def train(vocab_dict):
                                                        forward_only=True)
 
                         valid_loss+=loss
-                        accracy+=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v)
+                        temp=judge.getAccuracy(predict=valid_predict,truth=valid_law_v)
+                        accracy+=np.array(temp)
+                    accracy=accracy/FLAGS.valid_num_batch*1.0
+                    json.dump(accracy.tolist(),f_write)
+                    f_write.write('\n')
                     valid_loss_res=valid_loss/FLAGS.valid_num_batch
-                    valid_accu_res=accracy/FLAGS.valid_num_batch
+                    valid_accu_res=accracy[6]
                     valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
                     valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
                     valid_writer.add_summary(valid_loss_summary,step_index)
@@ -132,6 +136,7 @@ def train(vocab_dict):
             coord.request_stop()
         coord.join(threads)
         sess.close()
+        f_write.close()
 
 class TrainConfig:
     def __init__(self,path):
@@ -162,6 +167,7 @@ class PreProcess:
         FLAGS.w2v_model=trainconfig.get("w2v_model")
         FLAGS.pos_weight=trainconfig.get("pos_weight")
         FLAGS.embedding_size=trainconfig.get("embedding_size")
+        FLAGS.valid_logdir=trainconfig.get("valid_logdir")
     def before_train(self):
         law_num = getClassNum("law")
         FLAGS.num_classes=law_num

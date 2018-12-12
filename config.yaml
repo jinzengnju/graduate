@@ -1,10 +1,10 @@
 learning_rate: 0.0001
 max_gradient_norm: 5.0
 batch_size: 128
-num_hidden_units: 200
+num_hidden_units: 256
 embedding_size: 150
 num_layers: 2
-dropout: 0.8
+dropout: 0.6
 en_vocab_size: 100000
 ckpt_dir: checkpoints
 num_classes: 183
@@ -12,8 +12,9 @@ input_traindata: /home/jin/graduate/data_tfrecords/train.tfrecords
 input_validdata: /home/jin/graduate/data_tfrecords/valid.tfrecords
 valid_step: 200
 valid_num_batch: 120
-log_dir: /home/jin/graduate/log
+log_dir: /home/jin/graduate/log2
 vocab_dict: /home/jin/graduate/data/vocab.dict
 w2v_model: /home/jin/graduate/word2vec/w2v_model
-pos_weight: 1470
+pos_weight: 1500
 max_time_step_size: 1000
+valid_logdir: /home/jin/graduate/valid_log/log

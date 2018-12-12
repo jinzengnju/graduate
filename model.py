@@ -6,7 +6,7 @@ import tensorflow as tf
 
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
-        single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units)
+        single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units,initializer=tf.glorot_normal_initializer(),forget_bias=1.0)
         single_cell=tf.nn.rnn_cell.DropoutWrapper(single_cell,output_keep_prob=dropout)
         return single_cell
 
@@ -26,14 +26,19 @@ class Model(object):
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
         outputs=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
 
-        logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None)  # 默认不用激活函数激活
+        logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
+        self.probablities=tf.nn.sigmoid(logits)
+
+        #self.predict=tf.where(probablities>=0.5)
+        #predict是从0开始的label
 
         def get_accuracy(logits,targets_y):
             correct_prediction=tf.equal(tf.argmax(targets_y,1),tf.argmax(logits,1))
             accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
             return accuracy
         #self.accuracy=get_accuracy(self.targets_y,logits)
-        self.predict = tf.nn.top_k(logits, 5)
+        #self.predict = tf.nn.top_k(logits, 5)
+
         self.loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
         loss_summary=tf.summary.scalar('loss', self.loss)
         self.lr = tf.Variable(0.0, trainable=False)
@@ -59,9 +64,9 @@ class Model(object):
                     self.seq_lens:batch_seq_lens,
                     self.dropout:dropout}
         if forward_only:
-            output_feed=[self.summary,self.loss,self.predict,self.lr]
+            output_feed=[self.summary,self.loss,self.probablities,self.lr]
         else:
-            output_feed=[self.summary,self.train_optimizer,self.loss,self.predict,self.lr]
+            output_feed=[self.summary,self.train_optimizer,self.loss,self.probablities,self.lr]
         outputs=sess.run(output_feed,input_feed)
         if forward_only:
             return outputs[0],outputs[1],outputs[2],outputs[3]

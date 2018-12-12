@@ -24,6 +24,7 @@ class Judger:
 
     # Gen new results according to the truth and users output
     #这个是可以处理多标签的问题
+    #下面这个函数是针对一个样本的预测结果
     def gen_new_result(self, result, truth, label):
         s1 = set(label)
         s2 = set(truth)
@@ -66,14 +67,24 @@ class Judger:
     # Generate score for the first two subtasks
     def gen_score(self, arr):
         sumf = 0
+        sump=0
+        sumr=0
+        res=[]
         y = {"TP": 0, "FP": 0, "FN": 0, "TN": 0}
         for x in arr:
             p, r, f = self.get_value(x)
+            sump+=p
+            sumr+=r
             sumf += f#用于计算宏平均
             for z in x.keys():
                 y[z] += x[z]#用于计算微平均
-        _, __, f_ = self.get_value(y)
-        return (f_ + sumf * 1.0 / len(arr)) / 2.0#取的是宏平均和微平均的平均数
+        mi_p, mi_r, mi_f = self.get_value(y)
+        ma_p=sump*1.0/len(arr)
+        ma_r=sumr*1.0/len(arr)
+        ma_f=sumf*1.0/len(arr)
+        res=(mi_f+ma_f)/2.0
+        res=[mi_p,mi_r,mi_f,ma_p,ma_r,ma_f,res]
+        return res
 
     # Generatue all scores
     def get_score(self, result):
@@ -86,7 +97,7 @@ class Judger:
         for a in range(0, self.task2_cnt):
             result[0].append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
         for index in range(sample_num):
-            predict_sample=predict[index]
+            predict_sample=np.where(predict[index]>=0.5)[0]
             truth_sample=np.where(truth[index]==1)[0]
             result=self.gen_new_result(result,truth_sample,predict_sample)
         res=self.get_score(result)
