@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding:UTF-8 -*-
 import tensorflow as tf
+from attention import attention
 
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
@@ -13,6 +14,7 @@ class Model(object):
         self.targets_y=tf.placeholder(tf.float32,shape=[None,None],name='targets_y')
         self.seq_lens=tf.placeholder(tf.float32,shape=[None,],name='seq_lens')
         self.dropout=tf.placeholder(tf.float32)
+        self.topic_vector = tf.placeholder(tf.float32, shape=[None, None], name='topic_vector')
         self.global_step = tf.Variable(0, trainable=False)
         with tf.device('/cpu:0'),tf.name_scope("embedding"):
             self.embedding=tf.Variable(initial_value=embedding_matrix,dtype=tf.float32,name="Embedding",trainable=True)
@@ -22,9 +24,11 @@ class Model(object):
 
         initial_state=stacked_cell.zero_state(FLAGS.batch_size,tf.float32)
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
-        outputs=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
 
-        logits = tf.layers.dense(inputs=outputs, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
+        with tf.name_scope('attention_layer'):
+            outputs_attention=attention(all_outputs,256,self.topic_vector,time_major=False)
+        outputs_attention=outputs_attention/self.seq_lens[:,None]
+        logits = tf.layers.dense(inputs=outputs_attention, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         #self.probablities=tf.nn.sigmoid(logits)
 
         self.predict=tf.nn.top_k(logits,6,sorted=True)
@@ -57,11 +61,12 @@ class Model(object):
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
 
-    def step(self,sess,batch_X,batch_seq_lens,batch_y=None,dropout=1.0,forward_only=True):
+    def step(self,sess,batch_X,batch_seq_lens,batch_y,topic_vector,dropout=1.0,forward_only=True):
         input_feed={self.inputs_X:batch_X,
                     self.targets_y:batch_y,
                     self.seq_lens:batch_seq_lens,
-                    self.dropout:dropout}
+                    self.dropout:dropout,
+                    self.topic_vector:topic_vector}
         if forward_only:
             output_feed=[self.summary,self.loss,self.predict,self.lr]
         else:

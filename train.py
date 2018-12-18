@@ -9,6 +9,11 @@ from data_utils import *
 from MacroWithPython import *
 import yaml
 from gensim.models import Word2Vec
+import re
+from gensim import corpora
+from gensim.models import LdaModel
+from gensim.corpora import Dictionary
+
 
 #Configs
 tf.app.flags.DEFINE_string("rnn_unit",'lstm',"Type of RNN unit:rnn|gru|lstm.")
@@ -66,12 +71,31 @@ def get_EmbeddingMatrix(sorted_word):
             embedding_matrix[index]=embedding_vector
     return embedding_matrix
 
+
+def get_topicVector(dictionary,batch_context,lda):
+    batch_text = []
+    for text in batch_context:
+        text=bytes.decode(text)
+        text = re.sub('[^(\\u4e00-\\u9fa5)]', '', text)
+        text = re.sub('(?i)[^a-zA-Z0-9\u4E00-\u9FA5]', '', text)
+        batch_text.append([word for word in jieba.cut(text) if len(word) > 1])
+    other_corpus = [dictionary.doc2bow(text) for text in batch_text]
+    topic_vector=[]
+    for temp in other_corpus:
+        temp_vector=lda[temp]
+        topic_vector.append([list(t) for t in zip(*temp_vector)][1])
+    return np.array(topic_vector)
+
+
 def train(vocab_dict):
     os.environ['CUDA_VISIBLE_DEVICES']='0'
     gpuConfig=tf.ConfigProto(allow_soft_placement=True)
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     embedding_matrix = get_EmbeddingMatrix(vocab_dict)
+    lda = LdaModel.load("/home/jin/graduate/LDA/model")
+    dictionary = Dictionary.load("/home/jin/graduate/LDA/dict")
+    lda.__setattr__("minimum_probability", 0)
     f_write = open(FLAGS.valid_logdir, 'w')
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
         train_fact, train_laws = inputs(FLAGS.input_traindata, FLAGS.batch_size,FLAGS.num_classes)
@@ -87,9 +111,10 @@ def train(vocab_dict):
             sess.run(tf.assign(model.lr,FLAGS.learning_rate))
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
+                train_topic_vector = get_topicVector(dictionary, train_fact_v, lda)
                 #print([bytes.decode(e) for e in train_fact_v])
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
-                summary_train,_, loss, predict_result,lr= model.step(sess,train_fact_val,train_seq_lens,train_law_v,dropout=FLAGS.dropout,
+                summary_train,_, loss, predict_result,lr= model.step(sess,train_fact_val,train_seq_lens,train_law_v,train_topic_vector,dropout=FLAGS.dropout,
                                                forward_only=False)
                 #predict_result是batch内每个样本的预测类标记0-182
                 #train_law_v是经过one—hot编码的label向量0-182
@@ -119,8 +144,9 @@ def train(vocab_dict):
                         #print("验证一下")
                         #print(lr)
                         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
+                        valid_topic_vector=get_topicVector(dictionary, valid_fact_v, lda)
                         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
-                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v, dropout=1.0,
+                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v,valid_topic_vector,dropout=1.0,
                                                        forward_only=True)
 
                         valid_loss+=loss
