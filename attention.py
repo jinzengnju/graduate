@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding:UTF-8 -*-
 import tensorflow as tf
-def attention(inputs,attention_size,topic_vactor,time_major=False):
+def attention(inputs,attention_size,topic_vector,time_major=False):
     if time_major:
         #强行將维度信息改为（B，T，D）
         inputs=tf.array_ops.transpose(inputs,[1,0,2])
@@ -12,8 +12,9 @@ def attention(inputs,attention_size,topic_vactor,time_major=False):
     with tf.variable_scope("attention_W"):
         w_omega=tf.get_variable("w_omega",[hidden_size,attention_size],initializer=tf.glorot_normal_initializer())
         #b_omega=tf.get_variable("b_omega",[attention_size],initializer=tf.glorot_normal_initializer())
+    print(topic_vector.shape.as_list())
     with tf.name_scope("topic_fullconnect"):
-        u_omega=tf.layers.dense(inputs=topic_vactor,units=attention_size,activation=None,kernel_initializer=tf.glorot_normal_initializer())
+        u_omega=tf.layers.dense(inputs=topic_vector,units=attention_size,activation=None,kernel_initializer=tf.glorot_normal_initializer())
 
     #u_omega维度为bacth*attention_size
     temp=tf.tensordot(inputs,w_omega,axes=1)
