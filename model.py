@@ -25,11 +25,16 @@ class Model(object):
         initial_state=stacked_cell.zero_state(FLAGS.batch_size,tf.float32)
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
 
+        out_before_attention=tf.summary.histogram("out_before_attention",all_outputs)
 
-        with tf.name_scope('attention_layer'):
-            outputs_attention=attention(all_outputs,256,self.topic_vector,time_major=False)
+        # with tf.name_scope('attention_layer'):
+        #     outputs_attention=attention(all_outputs,256,self.topic_vector,time_major=False)
 
-        outputs_attention=outputs_attention/self.seq_lens[:,None]
+        #outputs_attention=outputs_attention/self.seq_lens[:,None]
+        #out_after_attention=tf.summary.histogram("out_after_attention",outputs_attention)
+
+
+        outputs_attention=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
 
 
         logits = tf.layers.dense(inputs=outputs_attention, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
@@ -60,7 +65,7 @@ class Model(object):
                 sparsity_summary=tf.summary.scalar("{}/grad/sparsity".format(v.name),tf.nn.zero_fraction(g))
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
-        self.summary=tf.summary.merge([loss_summary,grad_summaries_merged])
+        self.summary=tf.summary.merge([loss_summary,out_before_attention,grad_summaries_merged])
         optimizer=tf.train.AdamOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
