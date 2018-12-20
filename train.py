@@ -10,7 +10,6 @@ from MacroWithPython import *
 import yaml
 from gensim.models import Word2Vec
 import re
-from gensim import corpora
 from gensim.models import LdaModel
 from gensim.corpora import Dictionary
 
@@ -35,7 +34,7 @@ tf.app.flags.DEFINE_string("vocab_dict","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_string("config","/home/jin/data/vocab_dict",'')
 tf.app.flags.DEFINE_integer("max_time_step_size",600,'')
 tf.app.flags.DEFINE_string("w2v_model","/home/jin/data",'')
-tf.app.flags.DEFINE_integer("pos_weight",90,'')
+tf.app.flags.DEFINE_integer("pos_weight",3400,'')
 tf.app.flags.DEFINE_integer("embedding_size","150",'')
 tf.app.flags.DEFINE_string("valid_logdir","/home/jin/log",'')
 tf.app.flags.DEFINE_float("sig_value",0.5,'')
@@ -112,6 +111,7 @@ def train(vocab_dict):
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 train_topic_vector = get_topicVector(dictionary, train_fact_v, lda)
+                print(train_topic_vector)
                 #print([bytes.decode(e) for e in train_fact_v])
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
                 summary_train,_, loss, predict_result,lr= model.step(sess,train_fact_val,train_seq_lens,train_law_v,train_topic_vector,dropout=FLAGS.dropout,
