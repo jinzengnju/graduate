@@ -7,8 +7,6 @@ def attention(inputs,attention_size,topic_vector,time_major=False):
         inputs=tf.array_ops.transpose(inputs,[1,0,2])
     batch_size=inputs.shape[0].value
     hidden_size=inputs.shape[2].value
-    print("batch_size",batch_size)
-    print("hidden_size",hidden_size)
     #获取hiddensize的维度，假设为D
     #这里的attentionsize的维度为训练LDA主题向量的维度，因为要用主题向量来attention encoder的隐藏向量
     with tf.variable_scope("attention_W"):

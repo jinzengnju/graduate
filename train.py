@@ -111,7 +111,6 @@ def train(vocab_dict):
             while not coord.should_stop():#这里是永远不会停止的，因为epoch设置的是NOne
                 train_fact_v,train_law_v=sess.run([train_fact, train_laws])
                 train_topic_vector = get_topicVector(dictionary, train_fact_v, lda)
-                print(train_topic_vector)
                 #print([bytes.decode(e) for e in train_fact_v])
                 train_fact_val,train_seq_lens=get_X_with_word_index(train_fact_v,vocab_dict,FLAGS.max_time_step_size)
                 summary_train,_, loss, predict_result,lr= model.step(sess,train_fact_val,train_seq_lens,train_law_v,train_topic_vector,dropout=FLAGS.dropout,
