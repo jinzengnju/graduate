@@ -122,6 +122,13 @@ def train(vocab_dict):
                     step_index = sess.run(model.global_step)
                     train_writer.add_summary(summary_train, step_index)
                     print('Step %d:train loss=%.6f' % (step_index, loss))
+                    predict = predict_result[1]
+                    true_label = [np.where(e == 1)[0] for e in train_law_v]
+                    for num_i in range(len(predict)):
+                        print("预测*******************************************")
+                        print(predict[num_i])
+                        print("真实*******************************************")
+                        print(true_label[num_i])
 
                 # if step%(FLAGS.valid_step)==0:
                 #     predict=predict_result[1]

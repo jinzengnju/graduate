@@ -30,7 +30,7 @@ class Model(object):
         with tf.name_scope('attention_layer'):
             outputs_attention,attention_summary=attention(all_outputs,256,self.topic_vector,time_major=False)
 
-        outputs_attention=outputs_attention/self.seq_lens[:,None]
+        #outputs_attention=outputs_attention/self.seq_lens[:,None]
         out_after_attention=tf.summary.histogram("out_after_attention",outputs_attention)
 
 
