@@ -120,51 +120,52 @@ def train(vocab_dict):
                 #上面两个均为np.array类型
                 if step%5==0:
                     step_index = sess.run(model.global_step)
+                    train_writer.add_summary(summary_train, step_index)
                     print('Step %d:train loss=%.6f' % (step_index, loss))
 
-                if step%(FLAGS.valid_step)==0:
-                    predict=predict_result[1]
-                    true_label = [np.where(e == 1)[0] for e in train_law_v]
-                    for num_i in range(len(predict)):
-                        print("预测*******************************************")
-                        print(predict[num_i])
-                        print("真实*******************************************")
-                        print(true_label[num_i])
-
-                    time_use = time.time() - start_time
-                    print("***********************************************")
-                    step_index=sess.run(model.global_step)
-                    save_model(model,sess,step_index)
-                    print('Step %d:train loss=%.6f(%.3sec)'%(step_index,loss,time_use))
-                    train_writer.add_summary(summary_train,step_index)
-                    valid_loss = 0
-                    accracy=np.zeros(7)
-                    for _ in range(FLAGS.valid_num_batch):
-                        #print("验证一下")
-                        #print(lr)
-                        valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
-                        valid_topic_vector=get_topicVector(dictionary, valid_fact_v, lda)
-                        valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
-                        summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v,valid_topic_vector,dropout=1.0,
-                                                       forward_only=True)
-
-                        valid_loss+=loss
-                        temp=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v,sig_value=FLAGS.sig_value)
-                        accracy+=np.array(temp)
-                    accracy=accracy/FLAGS.valid_num_batch*1.0
-
-                    json.dump(accracy.tolist(),f_write)
-                    f_write.write('\n')
-                    f_write.flush()
-
-                    valid_loss_res=valid_loss/FLAGS.valid_num_batch
-                    valid_accu_res=accracy[6]
-                    valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
-                    valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
-                    valid_writer.add_summary(valid_loss_summary,step_index)
-                    valid_writer.add_summary(valid_accu_summary, step_index)
-                    print("valid loss=%.6f and accuracy=%.5f"%(valid_loss_res,valid_accu_res))
-                    start_time=time.time()
+                # if step%(FLAGS.valid_step)==0:
+                #     predict=predict_result[1]
+                #     true_label = [np.where(e == 1)[0] for e in train_law_v]
+                #     for num_i in range(len(predict)):
+                #         print("预测*******************************************")
+                #         print(predict[num_i])
+                #         print("真实*******************************************")
+                #         print(true_label[num_i])
+                #
+                #     time_use = time.time() - start_time
+                #     print("***********************************************")
+                #     step_index=sess.run(model.global_step)
+                #     save_model(model,sess,step_index)
+                #     print('Step %d:train loss=%.6f(%.3sec)'%(step_index,loss,time_use))
+                #     train_writer.add_summary(summary_train,step_index)
+                #     valid_loss = 0
+                #     accracy=np.zeros(7)
+                #     for _ in range(FLAGS.valid_num_batch):
+                #         #print("验证一下")
+                #         #print(lr)
+                #         valid_fact_v, valid_law_v = sess.run([valid_fact,valid_laws])
+                #         valid_topic_vector=get_topicVector(dictionary, valid_fact_v, lda)
+                #         valid_fact_val, valid_seq_lens = get_X_with_word_index(valid_fact_v, vocab_dict,FLAGS.max_time_step_size)
+                #         summary_valid,loss, valid_predict,lr= model.step(sess, valid_fact_val, valid_seq_lens, valid_law_v,valid_topic_vector,dropout=1.0,
+                #                                        forward_only=True)
+                #
+                #         valid_loss+=loss
+                #         temp=judge.getAccuracy(predict=valid_predict[1],truth=valid_law_v,sig_value=FLAGS.sig_value)
+                #         accracy+=np.array(temp)
+                #     accracy=accracy/FLAGS.valid_num_batch*1.0
+                #
+                #     json.dump(accracy.tolist(),f_write)
+                #     f_write.write('\n')
+                #     f_write.flush()
+                #
+                #     valid_loss_res=valid_loss/FLAGS.valid_num_batch
+                #     valid_accu_res=accracy[6]
+                #     valid_loss_summary=tf.Summary(value=[tf.Summary.Value(tag="valid_loss",simple_value=valid_loss_res)])
+                #     valid_accu_summary = tf.Summary(value=[tf.Summary.Value(tag="valid_accu", simple_value=valid_accu_res)])
+                #     valid_writer.add_summary(valid_loss_summary,step_index)
+                #     valid_writer.add_summary(valid_accu_summary, step_index)
+                #     print("valid loss=%.6f and accuracy=%.5f"%(valid_loss_res,valid_accu_res))
+                #     start_time=time.time()
                 step+=1
         except tf.errors.OutOfRangeError:
             print('Done training for %d steps'%step)
