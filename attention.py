@@ -42,9 +42,8 @@ def attention(inputs,attention_size,topic_vector,time_major=False):
     #vu=tf.matmul(v,tf.reshape(u_omega,[batch_size,attention_size,1]))
     vu=tf.reshape(tf.squeeze(vu),[batch_size,-1])
     alphas=tf.nn.softmax(vu,name='alphas')
-    alphas_summary=tf.summary.histogram("alphas",alphas)
+    #softmax默认在最后一个维度进行
     #B*T的形状
     output=tf.reduce_sum(inputs*tf.expand_dims(alphas,-1),1)
-    attention_summary=tf.summary.merge([alphas_summary])
 
-    return output,attention_summary
+    return output

@@ -28,15 +28,11 @@ class Model(object):
         out_before_attention=tf.summary.histogram("out_before_attention",all_outputs)
 
         with tf.name_scope('attention_layer'):
-            outputs_attention,attention_summary=attention(all_outputs,256,self.topic_vector,time_major=False)
+            outputs_attention=attention(all_outputs,256,self.topic_vector,time_major=False)
 
         #outputs_attention=outputs_attention/self.seq_lens[:,None]
-
-
-
         #outputs_attention=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
         out_after_attention = tf.summary.histogram("out_after_attention", outputs_attention)
-
         logits = tf.layers.dense(inputs=outputs_attention, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         #self.probablities=tf.nn.sigmoid(logits)
 
@@ -47,14 +43,11 @@ class Model(object):
             correct_prediction=tf.equal(tf.argmax(targets_y,1),tf.argmax(logits,1))
             accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
             return accuracy
-        #self.accuracy=get_accuracy(self.targets_y,logits)
-        #self.predict = tf.nn.top_k(logits, 5)
 
         self.loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets_y,logits,FLAGS.pos_weight))
         #self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=self.targets_y))
         loss_summary=tf.summary.scalar('loss', self.loss)
         self.lr = tf.Variable(0.0, trainable=False)
-
         trainable_vars=tf.trainable_variables()
         grads,_=tf.clip_by_global_norm(tf.gradients(self.loss,trainable_vars),FLAGS.max_gradient_norm)
         grad_summaries=[]
@@ -65,7 +58,7 @@ class Model(object):
                 sparsity_summary=tf.summary.scalar("{}/grad/sparsity".format(v.name),tf.nn.zero_fraction(g))
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
-        self.summary=tf.summary.merge([loss_summary,out_before_attention,out_after_attention,attention_summary,grad_summaries_merged])
+        self.summary=tf.summary.merge([loss_summary,out_before_attention,out_after_attention,grad_summaries_merged])
         optimizer=tf.train.AdamOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
