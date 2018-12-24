@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding:UTF-8 -*-
 import tensorflow as tf
-from attention import attention
+from tensorflow.contrib.seq2seq.python.ops.attention_wrapper import *
 
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
@@ -25,15 +25,18 @@ class Model(object):
         initial_state=stacked_cell.zero_state(FLAGS.batch_size,tf.float32)
         all_outputs,state=tf.nn.dynamic_rnn(initial_state=initial_state,cell=stacked_cell,inputs=inputs,sequence_length=self.seq_lens,dtype=tf.float32)
 
-        out_before_attention=tf.summary.histogram("out_before_attention",all_outputs)
+        cells=tf.nn.rnn_cell.MultiRNNCell([self.rnn_cell(FLAGS,self.dropout) for _ in range(1)])
+        attention_mechansim=BahdanauAttention(FLAGS.num_hidden_units,memory=all_outputs,memory_sequence_length=self.seq_lens)
 
-        with tf.name_scope('attention_layer'):
-            outputs_attention=attention(all_outputs,256,self.topic_vector,time_major=False)
+        att_wrapper=AttentionWrapper(cell=cells,attention_mechanism=attention_mechansim,cell_input_fn=lambda input,attention:input)
+        states=att_wrapper.zero_state(FLAGS.batch_size,tf.float32)
+        with tf.variable_scope("attention_layer",reuse=tf.AUTO_REUSE):
+            attention_output,state=att_wrapper(self.topic_vector,states)
+            #decoder的inputs就是单纯的topicvector，其实状态为0,將inputs和state输入到rnn中得到cell_output,用cell_output来做attention
+            #输出的attention_output是经过加权
 
-        #outputs_attention=outputs_attention/self.seq_lens[:,None]
-        #outputs_attention=tf.reduce_sum(all_outputs,1)/self.seq_lens[:,None]
-        out_after_attention = tf.summary.histogram("out_after_attention", outputs_attention)
-        logits = tf.layers.dense(inputs=outputs_attention, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
+
+        logits = tf.layers.dense(inputs=attention_output, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         #self.probablities=tf.nn.sigmoid(logits)
 
         self.predict=tf.nn.top_k(logits,6,sorted=True)
