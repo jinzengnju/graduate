@@ -14,7 +14,7 @@ class Model(object):
         self.targets_y=tf.placeholder(tf.float32,shape=[None,None],name='targets_y')
         self.seq_lens=tf.placeholder(tf.float32,shape=[None,],name='seq_lens')
         self.dropout=tf.placeholder(tf.float32)
-        self.topic_vector = tf.placeholder(tf.float32, shape=[None, None], name='topic_vector')
+        self.topic_vector = tf.placeholder(tf.float32, shape=[None, 256], name='topic_vector')
         self.global_step = tf.Variable(0, trainable=False)
         with tf.device('/cpu:0'),tf.name_scope("embedding"):
             self.embedding=tf.Variable(initial_value=embedding_matrix,dtype=tf.float32,name="Embedding",trainable=True)
@@ -61,7 +61,7 @@ class Model(object):
                 sparsity_summary=tf.summary.scalar("{}/grad/sparsity".format(v.name),tf.nn.zero_fraction(g))
                 grad_summaries.append(sparsity_summary)
         grad_summaries_merged=tf.summary.merge(grad_summaries)
-        self.summary=tf.summary.merge([loss_summary,out_before_attention,out_after_attention,grad_summaries_merged])
+        self.summary=tf.summary.merge([loss_summary,grad_summaries_merged])
         optimizer=tf.train.AdamOptimizer(self.lr)
         self.train_optimizer=optimizer.apply_gradients(zip(grads,trainable_vars),global_step=self.global_step)
         self.saver = tf.train.Saver(tf.all_variables(), max_to_keep=3)
