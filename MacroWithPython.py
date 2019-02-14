@@ -67,9 +67,9 @@ class Judger:
         sumf = 0
         sump=0
         sumr=0
-        res=[]
         y = {"TP": 0, "FP": 0, "FN": 0, "TN": 0}
         for x in arr:
+            print(x)
             p, r, f = self.get_value(x)
             sump+=p
             sumr+=r
@@ -100,21 +100,6 @@ class Judger:
             result=self.gen_new_result(result,truth_sample,predict_sample)
         res=self.get_score(result)
         return res
-
-    def getAccuracy2(self,predict,truth,sig_value):
-        result = [[]]
-        sample_num=len(predict)
-        for a in range(0, self.task2_cnt):
-            result[0].append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
-        for index in range(sample_num):
-            predict_sample=predict[index]
-            truth_sample=np.where(truth[index]==1)[0]
-            result=self.gen_new_result(result,truth_sample,predict_sample)
-        res=self.get_score(result)
-        return res
-
-
-
 
 if __name__=='__main__':
     judge=Judger()

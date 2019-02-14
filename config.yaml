@@ -15,7 +15,7 @@ valid_num_batch: 23
 log_dir: /home/jin/graduate/log
 vocab_dict: /home/jin/graduate/data/graduate/vocab.dict
 w2v_model: /home/jin/graduate/word2vec/graduate/w2v_model
-pos_weight: 5000
+pos_weight: 50000
 max_time_step_size: 1000
 valid_logdir: /home/jin/graduate/valid_log/log
 sig_value: 0.5
