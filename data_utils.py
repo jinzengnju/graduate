@@ -14,20 +14,9 @@ def init():
         #law的键是第几条，值是对应的类标记
 		line = f.readline()
 	f.close()
-	f = open('accu.txt', 'r', encoding = 'utf8')
-	accu = {}
-	accuname = {}
-	line = f.readline()
-	while line:
-		accuname[len(accu)] = line.strip()
-        #accuname的键是accu文件的行号索引（也即类标记），对应的值是案由名称
-		accu[line.strip()] = len(accu)
-        #accu对应的键是俺有名称，对应的值是类标记种类
-		line = f.readline()
-	f.close()
-	return law, accu, lawname, accuname
+	return law,lawname
 
-law, accu, lawname, accuname = init()
+law, lawname= init()
 
 
 def getClassNum(kind):
@@ -95,7 +84,6 @@ def cut_text(alltext,maxsize):
         if (len(one_text)>maxsize):
             one_text=one_text[:maxsize]
         train_text.append(one_text)
-
     return train_text
 
 

@@ -92,8 +92,8 @@ def train(vocab_dict):
     gpuConfig.gpu_options.allow_growth=True
     judge=Judger()
     embedding_matrix = get_EmbeddingMatrix(vocab_dict)
-    lda = LdaModel.load("/home/jin/graduate/LDA/model")
-    dictionary = Dictionary.load("/home/jin/graduate/LDA/dict")
+    lda = LdaModel.load("/home/jin/graduate/LDA/graduate/model")
+    dictionary = Dictionary.load("/home/jin/graduate/LDA/graduate/dict")
     lda.__setattr__("minimum_probability", 0)
     f_write = open(FLAGS.valid_logdir, 'w')
     with tf.Graph().as_default(), tf.Session(config=gpuConfig) as sess:
@@ -130,7 +130,6 @@ def train(vocab_dict):
                         print(predict[num_i])
                         print("真实*******************************************")
                         print(true_label[num_i])
-
                     time_use = time.time() - start_time
                     print("***********************************************")
                     step_index=sess.run(model.global_step)
@@ -212,8 +211,6 @@ class PreProcess:
         vocab_dict = json.load(f_read1)
         f_read1.close()
         return vocab_dict
-
-
 
 def main(unuse_args):
     traincofig=TrainConfig(FLAGS.config)
