@@ -68,18 +68,20 @@ class Judger:
         sump=0
         sumr=0
         y = {"TP": 0, "FP": 0, "FN": 0, "TN": 0}
+        cnt=0
         for x in arr:
-            print(x)
             p, r, f = self.get_value(x)
-            sump+=p
-            sumr+=r
-            sumf += f#用于计算宏平均
+            if not (p==1.0 and r==1.0 and f==1.0):
+                cnt+=1
+                sump+=p
+                sumr+=r
+                sumf += f#用于计算宏平均
             for z in x.keys():
                 y[z] += x[z]#用于计算微平均
         mi_p, mi_r, mi_f = self.get_value(y)
-        ma_p=sump*1.0/len(arr)
-        ma_r=sumr*1.0/len(arr)
-        ma_f=sumf*1.0/len(arr)
+        ma_p=sump*1.0/cnt
+        ma_r=sumr*1.0/cnt
+        ma_f=sumf*1.0/cnt
         res=(mi_f+ma_f)/2.0
         res=[mi_p,mi_r,mi_f,ma_p,ma_r,ma_f,res]
         return res
