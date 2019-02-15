@@ -36,7 +36,7 @@ class Model(object):
         logits = tf.layers.dense(inputs=outputs_attention, units=FLAGS.num_classes,activation=None,kernel_initializer=tf.glorot_normal_initializer())  # 默认不用激活函数激活
         #self.probablities=tf.nn.sigmoid(logits)
 
-        self.predict=tf.nn.top_k(logits,6,sorted=True)
+        self.predict=tf.nn.top_k(logits,12,sorted=True)
         #predict是从0开始的label
 
         def get_accuracy(logits,targets_y):
