@@ -5,7 +5,7 @@ from attention import attention
 
 class Model(object):
     def rnn_cell(self,FLAGS,dropout):
-        single_cell=tf.nn.rnn_cell.LSTMCell(FLAGS.num_hidden_units,forget_bias=1.0,initializer=tf.glorot_normal_initializer())
+        single_cell=tf.nn.rnn_cell.BasicLSTMCell(FLAGS.num_hidden_units,forget_bias=1.0,initializer=tf.glorot_normal_initializer())
         single_cell=tf.nn.rnn_cell.DropoutWrapper(single_cell,output_keep_prob=dropout)
         return single_cell
 

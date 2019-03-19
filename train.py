@@ -15,7 +15,6 @@ from gensim.corpora import Dictionary
 
 
 #Configs
-tf.app.flags.DEFINE_string("rnn_unit",'lstm',"Type of RNN unit:rnn|gru|lstm.")
 tf.app.flags.DEFINE_float("learning_rate",1e-5,"Learning Rate.")
 tf.app.flags.DEFINE_float("max_gradient_norm",5.0,"Clip gradients to this norm")
 tf.app.flags.DEFINE_integer("batch_size",64,"Batch size to use during training")
@@ -201,7 +200,6 @@ class TrainConfig:
 
 class PreProcess:
     def __init__(self,trainconfig):
-        FLAGS.rnn_unit=trainconfig.get("rnn_unit")
         FLAGS.learning_rate=trainconfig.get("learning_rate")
         FLAGS.max_gradient_norm=trainconfig.get("max_gradient_norm")
         FLAGS.batch_size=trainconfig.get("batch_size")
