@@ -2,6 +2,8 @@
 # -*- coding:UTF-8 -*-
 import numpy as np
 import jieba
+from train import stopwords
+import re
 def init():
 	f = open('law.txt', 'r', encoding = 'utf8')
 	law = {}
@@ -80,10 +82,17 @@ UNK_ID=3
 def cut_text(alltext,maxsize):
     train_text = []
     for text in alltext:
+        text = re.sub('[^(\\u4e00-\\u9fa5)]', '', text)
+        text = re.sub('(?i)[^a-zA-Z0-9\u4E00-\u9FA5]', '', text)
+        one_text_res = []
         one_text=[word for word in jieba.cut(text) if len(word)>1]
-        if (len(one_text)>maxsize):
-            one_text=one_text[:maxsize]
-        train_text.append(one_text)
+        for e in one_text:
+            if e in stopwords:
+                continue
+            one_text_res.append(e)
+        if (len(one_text_res)>maxsize):
+            one_text_res=one_text_res[:maxsize]
+        train_text.append(one_text_res)
     return train_text
 
 

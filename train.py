@@ -70,6 +70,19 @@ def get_EmbeddingMatrix(sorted_word):
             embedding_matrix[index]=embedding_vector
     return embedding_matrix
 
+def get_stopwords():
+    print("加载停用词...............")
+    fin=open("/home/jin/graduate/stopwords.txt",'r',encoding='utf8')
+    stopwords_temp=[]
+    line=fin.readline()
+    while line:
+        line=line.replace("\n","")
+        if line in stopwords_temp:
+            line=fin.readline()
+            continue
+        line=fin.readline()
+    return stopwords_temp
+stopwords=get_stopwords()
 
 def get_topicVector(dictionary,batch_context,lda):
     batch_text = []
@@ -77,7 +90,13 @@ def get_topicVector(dictionary,batch_context,lda):
         text=bytes.decode(text)
         text = re.sub('[^(\\u4e00-\\u9fa5)]', '', text)
         text = re.sub('(?i)[^a-zA-Z0-9\u4E00-\u9FA5]', '', text)
-        batch_text.append([word for word in jieba.cut(text) if len(word) > 1])
+        one_text_res = []
+        text_temp = [word for word in jieba.cut(text) if len(word) > 1]
+        for e in text_temp:
+            if e in stopwords:
+                continue
+            one_text_res.append(e)
+        batch_text.append(one_text_res)
     other_corpus = [dictionary.doc2bow(text) for text in batch_text]
     topic_vector=[]
     for temp in other_corpus:
