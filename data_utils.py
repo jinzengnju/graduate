@@ -95,6 +95,7 @@ stopwords=get_stopwords()
 def cut_text(alltext,maxsize):
     train_text = []
     for text in alltext:
+        text = bytes.decode(text)
         text = re.sub('[^(\\u4e00-\\u9fa5)]', '', text)
         text = re.sub('(?i)[^a-zA-Z0-9\u4E00-\u9FA5]', '', text)
         one_text_res = []
