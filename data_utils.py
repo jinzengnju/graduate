@@ -2,7 +2,6 @@
 # -*- coding:UTF-8 -*-
 import numpy as np
 import jieba
-from train import stopwords
 import re
 def init():
 	f = open('law.txt', 'r', encoding = 'utf8')
@@ -78,6 +77,20 @@ PAD_ID=0
 GO_ID=1
 EOS_ID=2
 UNK_ID=3
+
+def get_stopwords():
+    print("加载停用词...............")
+    fin=open("/home/jin/graduate/stopwords.txt",'r',encoding='utf8')
+    stopwords_temp=[]
+    line=fin.readline()
+    while line:
+        line=line.replace("\n","")
+        if line in stopwords_temp:
+            line=fin.readline()
+            continue
+        line=fin.readline()
+    return stopwords_temp
+stopwords=get_stopwords()
 
 def cut_text(alltext,maxsize):
     train_text = []
