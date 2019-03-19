@@ -71,11 +71,11 @@ class Judger:
         cnt=0
         for x in arr:
             p, r, f = self.get_value(x)
-            if not (p==1.0 and r==1.0 and f==1.0):
-                cnt+=1
-                sump+=p
-                sumr+=r
-                sumf += f#用于计算宏平均
+            # if not (p==1.0 and r==1.0 and f==1.0):
+            cnt+=1
+            sump+=p
+            sumr+=r
+            sumf += f#用于计算宏平均
             for z in x.keys():
                 y[z] += x[z]#用于计算微平均
         mi_p, mi_r, mi_f = self.get_value(y)
